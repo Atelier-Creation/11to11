@@ -1,0 +1,45 @@
+name: 11 11 CI / Build Verification
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  build-and-test:
+    name: Lint, Test & Build Monorepo
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9.2.0
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma Client
+        run: pnpm --filter @11-11/database generate
+
+      - name: Build Shared Packages
+        run: |
+          pnpm --filter @11-11/types build
+          pnpm --filter @11-11/ui build
+          pnpm --filter @11-11/database build
+
+      - name: Run API Unit & Integration Tests
+        run: pnpm --filter @11-11/api test
+
+      - name: Build All Monorepo Applications (Turbo)
+        run: pnpm turbo build

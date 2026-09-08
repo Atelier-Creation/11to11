@@ -1,0 +1,284 @@
+# Implementation Plan: 11 11 Luxury Fashion E-Commerce Platform (Pragmatic & Scalable Architecture)
+
+This implementation plan incorporates the lean architectural decisions: **avoid premature infrastructure complexity**, minimize operating overhead, guarantee relational integrity with PostgreSQL, and structure the system cleanly so technologies like Kafka or OpenSearch can be plugged in later without code rewrites.
+
+---
+
+## Architectural Principles & Decisions
+
+| Layer | Selected Technology | Rationale & Trade-offs |
+| :--- | :--- | :--- |
+| **Storefront** | Next.js 14+ (App Router) + React + TypeScript | Hybrid rendering (ISR for PDP/PLP/Editorial; CSR for Cart, Checkout, Wishlist; SSR for Search) |
+| **Admin Portal** | Next.js 14+ + React + TypeScript | Operational dashboard for inventory, catalog matrix, order fulfillment, and promotions |
+| **Backend API** | Node.js + NestJS + TypeScript | **Modular Monolith** with clean boundaries (`catalog`, `inventory`, `orders`, `cart`, `payments`, etc.) |
+| **Worker Service** | NestJS + BullMQ | Dedicated background queue consumer (`email`, `invoice`, `inventory.cleanup`, `notifications`) |
+| **Database & ORM** | PostgreSQL 16 + Prisma ORM | Relational consistency, atomic row-level locking for inventory reservations, ACID transactions |
+| **Cache & Queues** | Redis 7 + BullMQ | Ephemeral cart state, rate limiting, session store, BullMQ job queues (no Kafka overhead initially) |
+| **Search Engine** | PostgreSQL Full-Text Search (via `SearchService` abstraction) | Fast GIN indexes on `name`, `sku`, `category`, `color`, `material` — swappable with OpenSearch later |
+| **Object Storage** | DigitalOcean Spaces (S3-compatible API) | Offloads heavy luxury imagery, lookbooks, and invoices via `@aws-sdk/client-s3` with CDN |
+| **Edge / CDN** | Cloudflare Free | DNS, SSL termination, DDoS protection, static caching |
+| **Deployment** | Docker & Docker Compose on 1 DigitalOcean Droplet | Zero Kubernetes overhead initially; predictable cost; reproducible local & production environments |
+
+---
+
+## High-Level System Architecture
+
+```mermaid
+graph TD
+    Client[Customer / Web Browser] --> CF[Cloudflare Free - CDN & SSL]
+    Staff[Internal Staff / Merchandisers] --> CF
+
+    CF --> Storefront[Next.js Storefront - Port 3000]
+    CF --> AdminApp[Next.js Admin Dashboard - Port 3001]
+
+    Storefront -->|REST / JSON| API[NestJS Modular Monolith API - Port 4000]
+    AdminApp -->|REST / JSON| API
+
+    subgraph DigitalOcean Droplet / Local Docker Compose
+        API --> Postgres[(PostgreSQL DB)]
+        API --> Redis[(Redis)]
+        API --> BullMQ[BullMQ Job Queues]
+
+        BullMQ --> Worker[NestJS Worker Service]
+        Worker --> Email[Email & SMS Dispatch]
+        Worker --> Invoice[PDF Invoice Generation]
+        Worker --> Cleanup[Stale Cart Reservation Cleanup]
+        Worker --> Analytics[Analytics & Audit Logging]
+    end
+
+    API --> Spaces[DigitalOcean Spaces - S3 API]
+    Storefront --> SpacesCDN[Spaces CDN / Image Delivery]
+```
+
+---
+
+## Monorepo Directory Structure
+
+```text
+11_11_ecommerce/
+│
+├── apps/
+│   ├── api/                     # NestJS Modular Monolith (Port 4000)
+│   │   ├── src/
+│   │   │   ├── auth/            # Customer & Admin auth, JWT + Refresh tokens, RBAC, HTTP-only cookies
+│   │   │   ├── users/           # User profiles, saved addresses, preferences
+│   │   │   ├── catalog/         # Products, Multi-attribute Variants, Categories, Collections, SEO
+│   │   │   ├── inventory/       # Stock balances, Warehouses, Atomic reservations with TTL
+│   │   │   ├── cart/            # Guest and User carts, Redis caching & Postgres sync
+│   │   │   ├── orders/          # State machine, Order items, Status transitions, History audit
+│   │   │   ├── payments/        # Razorpay / Cashfree provider adapters & webhook verification
+│   │   │   ├── shipping/        # Shipping provider abstraction (Shiprocket / Delhivery)
+│   │   │   ├── promotions/      # Coupons, cart discount rules, threshold validations
+│   │   │   ├── reviews/         # Verified buyer ratings & feedback
+│   │   │   ├── wishlist/        # Customer curated saved items
+│   │   │   ├── search/          # SearchService abstraction -> PostgreSQLSearchProvider
+│   │   │   ├── media/           # DigitalOcean Spaces / S3 upload & CDN URL resolver
+│   │   │   ├── notifications/   # Email/SMS notification dispatcher interface
+│   │   │   └── common/          # Filters, Interceptors, Pipes, Guards, Decorators, PrismaService
+│   │   └── test/
+│   │
+│   ├── workers/                 # NestJS Worker Service (BullMQ consumers)
+│   │   ├── src/
+│   │   │   ├── queues/          # Queue tokens (EMAIL, INVOICE, INVENTORY, CATALOG, NOTIFICATION)
+│   │   │   ├── processors/      # Processors for order.created, invoice.generate, email.send, etc.
+│   │   │   └── schedulers/      # Cron-like cleanup for expired 15-min reservations
+│   │   └── test/
+│   │
+│   ├── storefront/              # Next.js 14+ (App Router) Luxury Experience (Port 3000)
+│   │   ├── app/
+│   │   │   ├── (shop)/          # PLP, Collections, PDP (ISR/SSG)
+│   │   │   ├── cart/            # Slide-over cart drawer & Cart review (CSR)
+│   │   │   ├── checkout/        # Two-step luxury checkout flow (CSR + Server APIs)
+│   │   │   ├── account/         # Customer orders, addresses, wishlist (SSR/CSR)
+│   │   │   ├── search/          # Fast faceted search page with live filters (SSR)
+│   │   │   └── lookbook/        # High-fashion editorial lookbook & campaigns
+│   │   ├── components/          # Editorial Hero, Gallery with Zoom, Size matrix selector, Micro-interactions
+│   │   └── styles/              # Custom luxury CSS design system (warm ivory, rich onyx, champagne gold)
+│   │
+│   └── admin/                   # Next.js 14+ Internal Management Console (Port 3001)
+│       ├── app/
+│       │   ├── dashboard/       # Sales metrics, inventory turnover, pending fulfillments
+│       │   ├── catalog/         # Product matrix editor (sizes, colors, SKUs, images, pricing)
+│       │   ├── orders/          # Order dispatch, status updates, shipment tracking generator
+│       │   ├── inventory/       # Warehouse stock audit, reservation manager
+│       │   └── promotions/      # Coupon & promotional campaign builder
+│       └── components/          # Responsive data tables, status badges, metrics cards
+│
+├── packages/
+│   ├── database/                # Shared Prisma client, migrations, schema.prisma, seed scripts
+│   ├── types/                   # Shared TypeScript DTOs, domain models, enum constants
+│   ├── config/                  # Shared ESLint, Prettier, and TypeScript base configurations
+│   └── ui/                      # Shared primitives and design tokens
+│
+├── docker-compose.yml           # Local dev stack: PostgreSQL 16, Redis 7, Mailpit
+├── turbo.json                   # Turborepo task pipeline
+├── pnpm-workspace.yaml          # pnpm workspace definition
+└── package.json                 # Root scripts
+```
+
+---
+
+## Detailed Data Model (PostgreSQL via Prisma)
+
+```mermaid
+erDiagram
+    User ||--o{ Address : has
+    User ||--o{ Order : places
+    User ||--o{ Cart : owns
+    User ||--o{ Review : writes
+    User ||--o{ WishlistItem : saves
+
+    Category ||--o{ Product : contains
+    Collection ||--o{ Product : groups
+    Product ||--o{ ProductVariant : has
+    Product ||--o{ ProductImage : displays
+    ProductVariant ||--o{ InventoryItem : stocked_in
+    ProductVariant ||--o{ InventoryReservation : reserved_by
+    ProductVariant ||--o{ CartItem : added_to
+    ProductVariant ||--o{ OrderItem : purchased_in
+
+    Order ||--o{ OrderItem : contains
+    Order ||--o{ OrderStatusHistory : tracks
+    Order ||--o{ Payment : records
+    Order ||--o{ Shipment : fulfills
+    Coupon ||--o{ Order : discounts
+```
+
+### Key Schema Highlights
+1. **Fashion Variant Model**:
+   - `Product`: Brand, title, slug, description, material, care instructions, base category, collection.
+   - `ProductVariant`: SKU (`1111-DRS-BLK-S`), size (`S, M, L, XL`), color name & hex, price, compareAtPrice (MSRP), barcode.
+   - `ProductImage`: URL (Spaces CDN), storageKey, altText, sortOrder, isPrimary.
+2. **Inventory & Reservation System**:
+   - `InventoryItem`: `variantId`, `warehouseId`, `quantityOnHand`, `reservedQuantity`.
+   - `InventoryReservation`: `id`, `variantId`, `cartId`, `quantity`, `expiresAt` (15-min lock), `status` (`ACTIVE`, `FULFILLED`, `RELEASED`).
+   - Atomic reservation logic using PostgreSQL transaction row locking (`SELECT ... FOR UPDATE`) prevents overselling.
+3. **Cart & Orders**:
+   - `Cart` & `CartItem`: Works for guest sessions (via anonymous cookie token) and authenticated users (merged upon login).
+   - `Order`: Order number (`1111-ORD-XXXX`), subtotal, discount, tax, shippingFee, totalAmount, currency, status (`PENDING_PAYMENT`, `PAID`, `PROCESSING`, `SHIPPED`, `DELIVERED`, `CANCELLED`).
+   - `Payment`: Gateway transaction ID, gateway (`RAZORPAY` / `CASHFREE`), status (`INITIATED`, `CAPTURED`, `FAILED`, `REFUNDED`), raw webhook payload.
+
+---
+
+## Modular Search Architecture (PostgreSQL-First)
+
+To prevent premature OpenSearch infrastructure costs while keeping future migration effortless:
+
+```typescript
+// packages/types or apps/api/src/search/search-provider.interface.ts
+export interface ISearchProvider {
+  searchProducts(query: SearchQueryDto): Promise<SearchResult<ProductSummaryDto>>;
+  suggest(term: string): Promise<string[]>;
+}
+
+// apps/api/src/search/providers/postgres-search.provider.ts
+@Injectable()
+export class PostgresSearchProvider implements ISearchProvider {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async searchProducts(query: SearchQueryDto) {
+    // Utilizes PostgreSQL to_tsvector, GIN indexes on title, description, tags, and relational filters (category, color, size, price range)
+  }
+}
+```
+
+When search volume or complexity grows to warrant dedicated infrastructure:
+- Swap provider to `OpenSearchProvider` in `SearchModule`. Zero changes needed in Storefront or API controllers.
+
+---
+
+## Phased Implementation Roadmap
+
+### Phase 1: Foundation & Workspace Setup
+- Initialize root `package.json`, `pnpm-workspace.yaml`, and `turbo.json`.
+- Configure `docker-compose.yml` with PostgreSQL 16, Redis 7, and Mailpit (for local email capture).
+- Create `packages/config` (TS, ESLint, Prettier), `packages/types`, and `packages/database`.
+- Define comprehensive Prisma schema and verify migration generation.
+- Scaffold `apps/api` (NestJS), `apps/workers` (NestJS + BullMQ), `apps/storefront` (Next.js), and `apps/admin` (Next.js).
+
+### Phase 2: Authentication & Authorization (RBAC)
+- Customer registration, login, refresh token rotation, logout.
+- HTTP-only secure cookie management.
+- Admin authentication with role-based access control (`SUPER_ADMIN`, `MERCHANDISER`, `FULFILLMENT_STAFF`).
+- Password reset flow with secure token hashing.
+
+### Phase 3: Catalog & Search Modules
+- Product & Variant CRUD with multi-attribute matrix generation (Color x Size).
+- Category tree & curated collection endpoints.
+- High-performance PostgreSQL Full-Text Search with GIN index on text fields + facet aggregations.
+- Media upload service integration with DigitalOcean Spaces S3 adapter and URL generation.
+
+### Phase 4: Inventory & Stock Reservation
+- Atomic reservation mechanism using PostgreSQL `$transaction` and row locks:
+  - Check `quantityOnHand - reservedQuantity >= requestedQuantity`.
+  - Create `InventoryReservation` with 15-minute TTL.
+- Automatic release on cart item removal or cancellation.
+
+### Phase 5: Cart & Promotions
+- Persistent guest carts and logged-in user cart synchronization.
+- Coupon engine supporting percentage discounts, flat discounts, minimum order thresholds, and usage limits.
+- Dynamic cart subtotal, tax, shipping, and promotional discount recalculation.
+
+### Phase 6: Checkout, Orders & Payment Gateway
+- Checkout state machine: Address selection -> Reservation verification -> Payment initiation.
+- Payment adapter integration: Razorpay & Cashfree test mode + signature verification + idempotent webhook handlers.
+- Order creation transaction: Converts cart to order, marks reservations as fulfilled, updates permanent inventory.
+- Refund handling logic.
+
+### Phase 7: Background Worker System (BullMQ)
+- Worker module consuming Redis queues:
+  - `email.send`: Order confirmation, shipping updates, password resets (via Nodemailer / Mailpit / SendGrid / SES).
+  - `invoice.generate`: Automated PDF invoice generation and storage in Spaces.
+  - `inventory.cleanup`: Scheduled job (every 2 minutes) to release expired checkout reservations.
+  - `notification.send`: Customer SMS/WhatsApp alerts.
+
+### Phase 8: Luxury Next.js Storefront
+- High-end editorial aesthetic:
+  - Curated typography (Cinzel / Playfair Display / Cormorant + Inter).
+  - Editorial campaign hero banner with luxury video/imagery.
+  - Curated collection lookbooks ("Handcrafted Silk", "Atelier Noir", "Autumn Cashmere").
+- Core customer journeys:
+  - PLP with instant faceted filtering (Size, Color, Fabric, Price, Sort).
+  - PDP with high-resolution image zoom, interactive size selector with real-time stock indicator, accordion specs, styling suggestions.
+  - Smooth slide-over cart drawer with real-time promo code feedback.
+  - Streamlined 2-step luxury checkout.
+  - Customer account hub with order tracking timeline.
+
+### Phase 9: Next.js Admin Portal
+- Executive KPI overview: Today's GMV, Orders, Average Order Value, Low Stock Alerts.
+- Product matrix builder: Add products, generate variants, manage inventory per SKU, upload gallery photos.
+- Order fulfillment console: View incoming orders, inspect line items, advance status (`PROCESSING` -> `SHIPPED`), assign tracking numbers.
+- Coupon & campaign manager.
+
+### Phase 10: Production Docker & Deployment Configuration
+- Multi-stage `Dockerfile` for `api`, `workers`, `storefront`, and `admin`.
+- Production `docker-compose.prod.yml` configured for a single DigitalOcean Droplet with reverse proxy.
+- GitHub Actions CI workflow (lint, type-check, automated tests, Docker build).
+- Cloudflare Free setup guide for DNS, SSL, and caching rules.
+
+---
+
+## Verification & Testing Plan
+
+### Automated Testing
+- **API Unit & Integration Tests**:
+  - `apps/api`: Inventory reservation concurrency test (simulating 10 concurrent requests for the last 1 item).
+  - `apps/api`: Cart price & coupon discount calculation verification.
+  - `apps/api`: Payment webhook signature verification & idempotency.
+- **Worker Tests**:
+  - `apps/workers`: Queue job dispatch and processing test.
+- **Monorepo Type Checking & Builds**:
+  - `pnpm turbo type-check`
+  - `pnpm turbo build`
+
+### End-to-End User Journeys
+1. **Customer Journey**:
+   - Customer opens Storefront -> Browses "Atelier Silk Dress".
+   - Selects Size M / Onyx Black -> Adds to cart (reserves stock for 15 mins).
+   - Applies coupon `WELCOME11` -> Sees instant price deduction.
+   - Enters shipping address -> Completes simulated payment -> Receives Order Confirmation with order ID.
+2. **Worker Verification**:
+   - Verify BullMQ captures `order.created`, generates invoice, and sends email to Mailpit.
+3. **Admin Journey**:
+   - Admin logs into Admin Console -> Sees new order in real-time.
+   - Marks order as `SHIPPED` with tracking code -> Customer order timeline updates immediately.

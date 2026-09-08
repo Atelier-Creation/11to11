@@ -1,0 +1,142 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@500;600&display=swap');
+
+:root {
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-serif: 'Playfair Display', Georgia, serif;
+
+  --admin-bg: #F8F9FA;
+  --admin-card: #FFFFFF;
+  --admin-sidebar: #111111;
+  --admin-sidebar-hover: #1E1E1E;
+  --admin-border: #E5E7EB;
+  
+  --admin-text: #1F2937;
+  --admin-text-muted: #6B7280;
+  
+  --gold-accent: #D4AF37;
+  --gold-light: #FBF8EE;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--admin-bg);
+  color: var(--admin-text);
+  min-height: 100vh;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Data Tables */
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 13px;
+}
+
+.admin-table th {
+  background-color: #F9FAFB;
+  color: #4B5563;
+  font-weight: 600;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--admin-border);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 11px;
+}
+
+.admin-table td {
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--admin-border);
+}
+
+.admin-table tr:hover td {
+  background-color: #FAFAFA;
+}
+
+/* Status Chips */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.status-CONFIRMED {
+  background-color: #EFF6FF;
+  color: #1D4ED8;
+}
+
+.status-PROCESSING {
+  background-color: #FFFBEB;
+  color: #B45309;
+}
+
+.status-SHIPPED {
+  background-color: #F0FDF4;
+  color: #15803D;
+}
+
+.status-DELIVERED {
+  background-color: #F5F3FF;
+  color: #6D28D9;
+}
+
+.status-CANCELLED {
+  background-color: #FEF2F2;
+  color: #B91C1C;
+}
+
+/* Admin Buttons */
+.btn-admin-dark {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #111;
+  color: #FFF;
+  padding: 9px 18px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.btn-admin-dark:hover {
+  background-color: #262626;
+}
+
+.btn-admin-outline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #FFF;
+  color: #374151;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid var(--admin-border);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-admin-outline:hover {
+  background-color: #F3F4F6;
+  border-color: #D1D5DB;
+}
