@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useRef, useEffect, useCallback } from 'react';
-import { usePathname, useSearchParams } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { gsap, prefersReducedMotion } from '../../lib/motion/gsap';
 
 interface TransitionContextType {
@@ -26,9 +26,7 @@ export const LuxuryRouteTransitionProvider: React.FC<{ children: React.ReactNode
   const startedAt = useRef(0);
 
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const routeKey = `${pathname}?${searchParams?.toString() || ''}`;
-  const prevRouteKey = useRef(routeKey);
+  const prevPathname = useRef(pathname);
 
   // Trigger transition immediately on click (0ms lag)
   const triggerTransition = useCallback((label?: string) => {
@@ -80,8 +78,8 @@ export const LuxuryRouteTransitionProvider: React.FC<{ children: React.ReactNode
 
   // Exit animation when destination route settles
   useEffect(() => {
-    if (isActive && prevRouteKey.current !== routeKey) {
-      prevRouteKey.current = routeKey;
+    if (isActive && prevPathname.current !== pathname) {
+      prevPathname.current = pathname;
 
       const elapsed = Date.now() - startedAt.current;
       const remainingGuard = Math.max(0, 150 - elapsed); // 150ms anti-flicker guard
@@ -106,9 +104,9 @@ export const LuxuryRouteTransitionProvider: React.FC<{ children: React.ReactNode
 
       return () => clearTimeout(exitTimer);
     } else {
-      prevRouteKey.current = routeKey;
+      prevPathname.current = pathname;
     }
-  }, [routeKey, isActive]);
+  }, [pathname, isActive]);
 
   // Failsafe timeout so the overlay never traps the user under any network anomaly
   useEffect(() => {

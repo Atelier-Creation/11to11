@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  distDir: process.env.BUILD_DIR || '.next',
   reactStrictMode: true,
   transpilePackages: ['@11-11/ui', '@11-11/types'],
   images: {
