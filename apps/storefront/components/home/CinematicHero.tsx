@@ -12,7 +12,7 @@ import { gsap, prefersReducedMotion } from '../../lib/motion/gsap';
 const slides = [
   {
     type: 'video',
-    src: '/hero/intro-Video.mp4',
+    src: '/hero/intro-video.mp4',
     poster: '/hero/intro-poster.png',
     eyebrow: '11 TO 11 FOR WOMEN',
     headline: 'ARCHITECTURAL DRAPERY',
