@@ -74,7 +74,7 @@ export const Header: React.FC<HeaderProps> = ({ cartCount, onOpenCart }) => {
       >
         <div className="header-inner">
           {/* Left: Mobile Hamburger & Desktop Navigation */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '24px', zIndex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '24px', zIndex: 1, flexShrink: 0 }}>
             <button
               onClick={() => setMobileMenuOpen(true)}
               style={{
@@ -118,21 +118,8 @@ export const Header: React.FC<HeaderProps> = ({ cartCount, onOpenCart }) => {
             </nav>
           </div>
 
-          {/* Center: Mathematically Centered Brand Logo (50% of viewport width) */}
-          <div
-            id="header-logo"
-            style={{
-              position: 'absolute',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              textAlign: 'center',
-              zIndex: 2,
-              pointerEvents: 'auto',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
+          {/* Center: Brand Logo (Centered in-flow on mobile, absolute on desktop) */}
+          <div id="header-logo">
             <Link href="/" aria-label="11 to 11 Home" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
               <Image
                 src="/11-11_logo.png"
@@ -157,54 +144,69 @@ export const Header: React.FC<HeaderProps> = ({ cartCount, onOpenCart }) => {
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '18px',
+              gap: '10px',
               zIndex: 1,
+              flexShrink: 0,
             }}
           >
-            {/* Search Trigger or Inline Field */}
-            {searchOpen ? (
-              <form onSubmit={handleSearchSubmit} style={{ display: 'flex', alignItems: 'center' }}>
-                <input
-                  type="text"
-                  placeholder="Search collection..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  autoFocus
-                  style={{
-                    border: 'none',
-                    borderBottom: `1px solid ${textColor}`,
-                    backgroundColor: 'transparent',
-                    padding: '4px 8px',
-                    fontSize: '12px',
-                    fontFamily: 'inherit',
-                    width: '150px',
-                    outline: 'none',
-                    color: textColor,
-                  }}
-                />
-                <button
-                  type="button"
-                  onClick={() => setSearchOpen(false)}
-                  style={{ marginLeft: '4px', color: textColor, background: 'transparent', border: 'none', cursor: 'pointer' }}
-                  aria-label="Close search"
-                >
-                  <X size={16} />
-                </button>
-              </form>
-            ) : (
-              <button
-                onClick={() => setSearchOpen(true)}
-                style={{ color: textColor, padding: '6px', background: 'transparent', border: 'none', cursor: 'pointer' }}
-                aria-label="Search collection"
-              >
-                <Search size={18} />
-              </button>
-            )}
+            {/* Mobile Search Button (Direct Link to /search) */}
+            <TransitionLink
+              href="/search"
+              transitionLabel="SEARCHING ARCHIVE"
+              className="md:hidden"
+              style={{ color: textColor, padding: '6px', display: 'flex', alignItems: 'center' }}
+              aria-label="Search collection"
+            >
+              <Search size={18} />
+            </TransitionLink>
 
-            {/* Wishlist Link */}
+            {/* Desktop Search Trigger / Inline Field */}
+            <div className="hidden md:flex items-center">
+              {searchOpen ? (
+                <form onSubmit={handleSearchSubmit} style={{ display: 'flex', alignItems: 'center' }}>
+                  <input
+                    type="text"
+                    placeholder="Search collection..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    autoFocus
+                    style={{
+                      border: 'none',
+                      borderBottom: `1px solid ${textColor}`,
+                      backgroundColor: 'transparent',
+                      padding: '4px 8px',
+                      fontSize: '12px',
+                      fontFamily: 'inherit',
+                      width: '150px',
+                      outline: 'none',
+                      color: textColor,
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setSearchOpen(false)}
+                    style={{ marginLeft: '4px', color: textColor, background: 'transparent', border: 'none', cursor: 'pointer' }}
+                    aria-label="Close search"
+                  >
+                    <X size={16} />
+                  </button>
+                </form>
+              ) : (
+                <button
+                  onClick={() => setSearchOpen(true)}
+                  style={{ color: textColor, padding: '6px', background: 'transparent', border: 'none', cursor: 'pointer' }}
+                  aria-label="Search collection"
+                >
+                  <Search size={18} />
+                </button>
+              )}
+            </div>
+
+            {/* Wishlist Link (Desktop Only) */}
             <TransitionLink
               href="/wishlist"
               transitionLabel="CURATING WISHLIST"
+              
               style={{
                 color: textColor,
                 padding: '6px',
@@ -238,7 +240,7 @@ export const Header: React.FC<HeaderProps> = ({ cartCount, onOpenCart }) => {
               )}
             </TransitionLink>
 
-            {/* Account / Login Link */}
+            {/* Account / Login Link (Desktop Only) */}
             <TransitionLink
               href="/account"
               transitionLabel="CLIENT PRIVILEGE CONCIERGE"

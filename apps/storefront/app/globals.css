@@ -274,6 +274,18 @@ button {
 }
 
 /* Center Brand Logo smooth scale */
+#header-logo {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  z-index: 2;
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .header-logo-image {
   height: 42px;
   width: auto;
@@ -289,12 +301,33 @@ button {
 }
 
 @media (max-width: 767px) {
+  #header-logo {
+    position: relative;
+    left: auto;
+    transform: none;
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    z-index: 1;
+    margin: 0 4px;
+  }
+
+  .header-desktop-only {
+    display: none !important;
+  }
+
   .header-logo-image {
-    height: 32px;
-    max-width: 130px;
+    height: 30px;
+    max-width: 120px;
   }
   .header-solid.is-scrolled .header-logo-image {
-    height: 28px;
+    height: 26px;
+  }
+}
+
+@media (min-width: 768px) {
+  .header-desktop-only {
+    display: flex !important;
   }
 }
 
@@ -704,13 +737,24 @@ button.md\:hidden {
 
 @media (max-width: 768px) {
   .hero-nav {
-    right: 20px;
+    left: 20px;
+    right: auto;
     bottom: 24px;
     gap: 10px;
+  }
+  .hero-nav button {
+    width: 34px;
+    height: 34px;
+  }
+  .hero-progress-track {
+    width: 44px;
   }
   .skip-intro {
     top: 76px;
     right: 20px;
+  }
+  .hero-scroll-indicator {
+    display: none !important;
   }
 }
 

@@ -358,6 +358,7 @@ export const CinematicHero: React.FC = () => {
       {/* Scroll indicator */}
       <div
         ref={scrollIndicatorRef}
+        className="hero-scroll-indicator"
         onClick={() => window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })}
         style={{
           position: 'absolute',
