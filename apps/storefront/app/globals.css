@@ -6,24 +6,39 @@
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
   /* Haute Editorial Luxury Palette */
-  --bg-primary: #FAF9F5;          /* Warm alabaster canvas */
-  --bg-surface: #FFFFFF;          /* Pure white card surface */
-  --bg-secondary: #F3EFEA;        /* Warm subdued stone surface */
-  --bg-dark: #111111;             /* Noir onyx deep background */
-  --bg-dark-surface: #1A1A1A;     /* Elevated dark surface */
-  
-  --text-primary: #111111;        /* Primary deep black (17.2:1 contrast) */
-  --text-secondary: #6E6862;      /* Editorial neutral body & meta */
-  --text-muted: #9E968D;          /* Micro-copy, breadcrumbs, delimiters */
-  --text-light: #FAF9F5;          /* Light ink on dark surfaces */
+  --bg-primary: #FAF9F5;
+  /* Warm alabaster canvas */
+  --bg-surface: #FFFFFF;
+  /* Pure white card surface */
+  --bg-secondary: #F3EFEA;
+  /* Warm subdued stone surface */
+  --bg-dark: #111111;
+  /* Noir onyx deep background */
+  --bg-dark-surface: #1A1A1A;
+  /* Elevated dark surface */
 
-  --accent-gold: #D4AF37;         /* Champagne gold luxury accent */
-  --accent-gold-light: #F3E5AB;   /* Subtle gold tint */
-  --accent-gold-dark: #9E8024;    /* Accessible contrast gold */
-  
-  --border-light: #E8E3DA;        /* Hairline architectural divider */
-  --border-subtle: #D8D2C7;       /* Hover / active border */
-  --border-dark: #2A2A2A;         /* Dark mode border */
+  --text-primary: #111111;
+  /* Primary deep black (17.2:1 contrast) */
+  --text-secondary: #6E6862;
+  /* Editorial neutral body & meta */
+  --text-muted: #9E968D;
+  /* Micro-copy, breadcrumbs, delimiters */
+  --text-light: #FAF9F5;
+  /* Light ink on dark surfaces */
+
+  --accent-gold: #D4AF37;
+  /* Champagne gold luxury accent */
+  --accent-gold-light: #F3E5AB;
+  /* Subtle gold tint */
+  --accent-gold-dark: #9E8024;
+  /* Accessible contrast gold */
+
+  --border-light: #E8E3DA;
+  /* Hairline architectural divider */
+  --border-subtle: #D8D2C7;
+  /* Hover / active border */
+  --border-dark: #2A2A2A;
+  /* Dark mode border */
 
   /* Status Colors */
   --status-success: #15803D;
@@ -197,11 +212,11 @@ button {
   border-bottom-right-radius: 0px;
   box-shadow: none;
   transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1),
-              max-width 0.4s cubic-bezier(0.16, 1, 0.3, 1),
-              background-color 0.35s ease,
-              border-color 0.35s ease,
-              border-radius 0.4s cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 0.35s ease;
+    max-width 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 0.35s ease,
+    border-color 0.35s ease,
+    border-radius 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.35s ease;
   will-change: width, border-radius, box-shadow;
 }
 
@@ -254,7 +269,7 @@ button {
   padding: 16px 24px;
   min-height: 64px;
   transition: padding 0.4s cubic-bezier(0.16, 1, 0.3, 1),
-              min-height 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    min-height 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .header-solid.is-scrolled .header-inner {
@@ -267,6 +282,7 @@ button {
     padding: 14px 16px;
     min-height: 58px;
   }
+
   .header-solid.is-scrolled .header-inner {
     padding: 8px 16px;
     min-height: 48px;
@@ -292,7 +308,7 @@ button {
   max-width: 170px;
   object-fit: contain;
   transition: height 0.35s cubic-bezier(0.16, 1, 0.3, 1),
-              transform 0.35s ease;
+    transform 0.35s ease;
   display: block;
 }
 
@@ -320,6 +336,7 @@ button {
     height: 30px;
     max-width: 120px;
   }
+
   .header-solid.is-scrolled .header-logo-image {
     height: 26px;
   }
@@ -464,6 +481,7 @@ button {
   0% {
     background-position: -200% 0;
   }
+
   100% {
     background-position: 200% 0;
   }
@@ -529,13 +547,16 @@ button.md\:hidden {
 }
 
 @media (min-width: 768px) {
+
   .md\:hidden,
   button.md\:hidden {
     display: none !important;
   }
+
   .md\:flex {
     display: flex !important;
   }
+
   .md\:block {
     display: block !important;
   }
@@ -545,6 +566,7 @@ button.md\:hidden {
   .lg\:grid {
     display: grid !important;
   }
+
   .lg\:hidden {
     display: none !important;
   }
@@ -570,7 +592,8 @@ button.md\:hidden {
   .pillars-section {
     height: 320vh;
   }
-.pillars-desktop-wrapper {
+
+  .pillars-desktop-wrapper {
     display: grid !important;
     grid-template-columns: 46% 54%;
     position: sticky;
@@ -579,6 +602,7 @@ button.md\:hidden {
     width: 100%;
     overflow: hidden;
   }
+
   .pillars-mobile-wrapper {
     display: none !important;
   }
@@ -590,7 +614,7 @@ button.md\:hidden {
 .hero-slider {
   position: relative;
   width: 100%;
-  height: 100vh;
+  height: 70vh;
   min-height: 650px;
   overflow: hidden;
   background-color: #0B0A08;
@@ -626,12 +650,10 @@ button.md\:hidden {
 .slide-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    180deg,
-    rgba(11, 10, 8, 0.45) 0%,
-    rgba(11, 10, 8, 0.2) 40%,
-    rgba(11, 10, 8, 0.75) 100%
-  );
+  background: linear-gradient(180deg,
+      rgba(11, 10, 8, 0.45) 0%,
+      rgba(11, 10, 8, 0.2) 40%,
+      rgba(11, 10, 8, 0.75) 100%);
   z-index: 1;
   pointer-events: none;
 }
@@ -651,7 +673,7 @@ button.md\:hidden {
   pointer-events: none;
 }
 
-.slide-content > * {
+.slide-content>* {
   pointer-events: auto;
 }
 
@@ -737,24 +759,29 @@ button.md\:hidden {
 
 @media (max-width: 768px) {
   .hero-nav {
-    left: 20px;
+    left: 50%;
     right: auto;
     bottom: 24px;
+    transform: translateX(-50%);
     gap: 10px;
+    flex-direction: column;
   }
+
   .hero-nav button {
     width: 34px;
     height: 34px;
   }
+
   .hero-progress-track {
     width: 44px;
   }
+
   .skip-intro {
     top: 76px;
     right: 20px;
   }
+
   .hero-scroll-indicator {
     display: none !important;
   }
 }
-

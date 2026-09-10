@@ -12,7 +12,7 @@ import { gsap, prefersReducedMotion } from '../../lib/motion/gsap';
 const slides = [
   {
     type: 'video',
-    src: '/hero/intro-video.mp4',
+    src: '/hero/intro-Video.mp4',
     poster: '/hero/intro-poster.png',
     eyebrow: '11 TO 11 FOR WOMEN',
     headline: 'ARCHITECTURAL DRAPERY',
@@ -341,7 +341,7 @@ export const CinematicHero: React.FC = () => {
 
       {/* Luxury Navigation Controls */}
       <div className="hero-nav" role="group" aria-label="Hero navigation">
-        <button className="prev" aria-label="Previous slide" onClick={goPrev}>
+        <div style={{display:"flex", gap:"12px",alignItems: 'center',}}><button className="prev" aria-label="Previous slide" onClick={goPrev}>
           <ArrowLeft size={16} />
         </button>
         <span className="progress">
@@ -349,7 +349,7 @@ export const CinematicHero: React.FC = () => {
         </span>
         <button className="next" aria-label="Next slide" onClick={goNext}>
           <ArrowRight size={16} />
-        </button>
+        </button></div>
         <div className="hero-progress-track">
           <div className="hero-progress-fill" ref={progressRef} />
         </div>
