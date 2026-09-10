@@ -1,6 +1,7 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import { Header } from './Header';
 import { CartDrawer } from './CartDrawer';
 import { Footer } from './Footer';
@@ -8,6 +9,27 @@ import { LuxuryRouteTransitionProvider } from './motion/LuxuryRouteTransition';
 import { useCart } from '../context/CartContext';
 
 export const StorefrontShell: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const pathname = usePathname();
+
+  useEffect(() => {
+    import('aos').then((mod) => {
+      const AOS = mod.default || mod;
+      AOS.init({
+        duration: 800,
+        easing: 'ease-out-cubic',
+        once: true,
+        offset: 40,
+      });
+    });
+  }, []);
+
+  useEffect(() => {
+    import('aos').then((mod) => {
+      const AOS = mod.default || mod;
+      AOS.refresh();
+    });
+  }, [pathname]);
+
   const {
     items,
     itemsCount,
